@@ -1,95 +1,63 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, {useEffect} from 'react';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
 import {
+  Button,
   SafeAreaView,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
-  useColorScheme,
   View,
 } from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+import {subscribeToNativeEvent, sendEventsToNative} from './SendEventsModule';
 
 function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  const [nativeEventData, setNativeEventData] = React.useState('');
+  const [randomString, setRandomString] = React.useState(
+    Math.random().toString(36).substring(2, 6).toUpperCase(),
+  );
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+  useEffect(() => {
+    const unsubscribe = subscribeToNativeEvent((data: any) => {
+      console.log('Received event from native:', data);
+      setNativeEventData(data);
+    });
+
+    return unsubscribe;
+  }, []);
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
+    <SafeAreaView style={styles.sectionContainer}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic">
+        <View>
+          <Text style={styles.sectionTitle}>Send events</Text>
+          <Text style={styles.sectionDescription}>
+            Klikk på knappen for å sende{' '}
+            <Text style={styles.highlight}>{randomString}</Text> til native
+          </Text>
+
+          <View style={styles.actionsContainer}>
+            <Button
+              onPress={() => {
+                sendEventsToNative(randomString);
+              }}
+              title="Send event til Native"
+              color="#841584"
+            />
+            <Button
+              onPress={() => {
+                setRandomString(
+                  Math.random().toString(36).substring(2, 6).toUpperCase(),
+                );
+              }}
+              title="Lag ny random"
+              color="#841584"
+            />
+          </View>
+          {nativeEventData && (
+            <Text style={[styles.sectionDescription, styles.highlight]}>
+              {nativeEventData}
+            </Text>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -98,8 +66,11 @@ function App(): React.JSX.Element {
 
 const styles = StyleSheet.create({
   sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+    margin: 10,
+  },
+  actionsContainer: {
+    display: 'flex',
+    flexDirection: 'row',
   },
   sectionTitle: {
     fontSize: 24,
