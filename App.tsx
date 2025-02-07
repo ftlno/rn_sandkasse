@@ -9,9 +9,11 @@ import {
   View,
 } from 'react-native';
 import {subscribeToNativeEvent, sendEventsToNative} from './SendEventsModule';
+import {set, get} from './Settings';
 
 function App(): React.JSX.Element {
   const [nativeEventData, setNativeEventData] = React.useState('');
+  const [secureValue, setSecureValue] = React.useState('');
   const [randomString, setRandomString] = React.useState(
     Math.random().toString(36).substring(2, 6).toUpperCase(),
   );
@@ -25,6 +27,13 @@ function App(): React.JSX.Element {
     return unsubscribe;
   }, []);
 
+  const sendToNative = async () => {
+    set(randomString);
+    sendEventsToNative(randomString);
+    const value = await get();
+    setSecureValue(value);
+  };
+
   return (
     <SafeAreaView style={styles.sectionContainer}>
       <ScrollView contentInsetAdjustmentBehavior="automatic">
@@ -37,9 +46,7 @@ function App(): React.JSX.Element {
 
           <View style={styles.actionsContainer}>
             <Button
-              onPress={() => {
-                sendEventsToNative(randomString);
-              }}
+              onPress={sendToNative}
               title="Send event til Native"
               color="#841584"
             />
@@ -56,6 +63,11 @@ function App(): React.JSX.Element {
           {nativeEventData && (
             <Text style={[styles.sectionDescription, styles.highlight]}>
               {nativeEventData}
+            </Text>
+          )}
+          {secureValue && (
+            <Text style={[styles.sectionDescription, styles.highlight]}>
+              From secure Storage: {secureValue}
             </Text>
           )}
         </View>

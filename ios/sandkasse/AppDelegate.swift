@@ -30,7 +30,7 @@ class AppDelegate: RCTAppDelegate {
   }
   
   @objc override func extraModules(for bridge: RCTBridge!) -> [RCTBridgeModule] {
-    return [SendEventsModule()]
+    return [SendEventsModule(), Settings()]
   }
   
   override func sourceURL(for bridge: RCTBridge) -> URL? {
